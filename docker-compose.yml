@@ -1,0 +1,25 @@
+name: adaptive-nutrition-copilot
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: adaptive-nutrition-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-adaptive_nutrition}
+      POSTGRES_USER: ${POSTGRES_USER:-adaptive_nutrition}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-local-only}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-adaptive_nutrition} -d ${POSTGRES_DB:-adaptive_nutrition}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend and frontend services will be added after the FastAPI and React
+  # projects are initialized. They are intentionally omitted for now.
+
+volumes:
+  postgres-data:
