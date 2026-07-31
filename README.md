@@ -2,7 +2,7 @@
 
 Human-in-the-loop personalized nutrition decision support for dietitians and their clients.
 
-This repository is intentionally at the project-scaffold stage. It defines the monorepo layout, initial product scope, development flow, architecture direction, and data model for the first MVP. It does not yet implement the application.
+This repository is following a gated 13-stage development roadmap. Stage 1 (scope, roles, and architecture boundaries) is approved and closed. A partial FastAPI/database health-check implementation exists, but Stage 2 is not yet complete.
 
 ## MVP Focus
 
@@ -18,7 +18,7 @@ The MVP keeps the dietitian in control. Replacement results are decision-support
 
 ```text
 adaptive-nutrition-copilot/
-  backend/              FastAPI backend placeholder
+  backend/              Partial FastAPI backend skeleton
   frontend/             React frontend placeholder
   db/                   PostgreSQL schema and migration placeholder
   tests/                Cross-project test placeholder
@@ -30,6 +30,7 @@ adaptive-nutrition-copilot/
 ## Documentation
 
 - [Product Scope](docs/product-scope.md)
+- [Roles and Authorization Boundaries](docs/roles.md)
 - [Development Flow](docs/development-flow.md)
 - [Architecture](docs/architecture.md)
 - [Data Model](docs/data-model.md)
@@ -46,4 +47,4 @@ adaptive-nutrition-copilot/
 
 ## Next Step
 
-The next useful step is to choose concrete backend and frontend package tooling, then add minimal health-check applications and tests.
+Complete and verify the Stage 2 FastAPI skeleton acceptance criteria documented in `docs/architecture.md`, without introducing database domain models, LLMs, LangGraph, RAG, or agent tools.

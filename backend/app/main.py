@@ -1,7 +1,7 @@
-import psycopg
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI
 
-from app.core.database import verify_database_connection
+from app.api.router import router as api_router
+from app.core.exception_handlers import register_exception_handlers
 
 
 app = FastAPI(
@@ -9,24 +9,5 @@ app = FastAPI(
     version="0.1.0",
 )
 
-
-@app.get("/health")
-def health_check() -> dict[str, str]:
-    try:
-        database_connected = verify_database_connection()
-    except psycopg.Error as exc:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database connection failed",
-        ) from exc
-
-    if not database_connected:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database health check failed",
-        )
-
-    return {
-        "status": "healthy",
-        "database": "connected",
-    }
+register_exception_handlers(app)
+app.include_router(api_router)
