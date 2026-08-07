@@ -2,10 +2,22 @@ from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
+from sqlalchemy.engine import Connection
 
 from app.core.config import get_settings
 from app.core.orm import resolve_sqlalchemy_database_url
 from app.models.base import Base
+from app.models.client_details import ClientHealthProfile, ClientPreferences
+from app.models.clinical_records import (
+    ClientAllergy,
+    ClientMedicalCondition,
+    ClientMedication,
+)
+from app.models.food import Food, FoodNutrient
+from app.models.nutrition_plan import NutritionPlan
+from app.models.plan_structure import Meal, MealItem, PlanDay
+from app.models.profiles import ClientProfile, DietitianProfile
+from app.models.user import User
 
 
 target_metadata = Base.metadata
@@ -36,6 +48,11 @@ def run_migrations_offline() -> None:
 
 def run_migrations_online() -> None:
     config = context.config
+    provided_connection = config.attributes.get("connection")
+    if provided_connection is not None:
+        run_migrations_with_connection(provided_connection)
+        return
+
     configuration = config.get_section(config.config_ini_section) or {}
     configuration["sqlalchemy.url"] = get_database_url()
 
@@ -46,14 +63,18 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            compare_type=True,
-        )
+        run_migrations_with_connection(connection)
 
-        with context.begin_transaction():
-            context.run_migrations()
+
+def run_migrations_with_connection(connection: Connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_type=True,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
 
 
 def alembic_context_is_active() -> bool:

@@ -5,13 +5,12 @@ import pytest
 from pydantic import SecretStr
 
 
-def test_declarative_base_has_importable_empty_metadata() -> None:
+def test_declarative_base_is_importable() -> None:
     from sqlalchemy.orm import DeclarativeBase
 
     from app.models.base import Base
 
     assert issubclass(Base, DeclarativeBase)
-    assert Base.metadata.tables == {}
 
 
 def test_orm_module_import_does_not_create_engine(monkeypatch) -> None:
