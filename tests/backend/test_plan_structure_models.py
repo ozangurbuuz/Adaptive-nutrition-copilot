@@ -1,7 +1,15 @@
 import subprocess
 import sys
 
-from sqlalchemy import CheckConstraint, DateTime, Enum, Integer, Numeric, String
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    Enum,
+    Integer,
+    Numeric,
+    String,
+    UniqueConstraint,
+)
 from sqlalchemy.dialects.postgresql import UUID
 
 
@@ -132,6 +140,7 @@ def test_meal_item_quantity_unit_and_snapshot_columns() -> None:
         "meal_id",
         "food_id",
         "item_name",
+        "sort_order",
         "quantity",
         "unit",
         "created_at",
@@ -162,6 +171,40 @@ def test_meal_item_quantity_unit_and_snapshot_columns() -> None:
         "allergen_json",
         "substitution_data",
     }.intersection(table.columns.keys())
+
+
+def test_meal_item_sort_order_is_integer_non_nullable_and_defaults_to_zero() -> None:
+    from app.models.plan_structure import MealItem
+
+    sort_order = MealItem.__table__.c.sort_order
+
+    assert isinstance(sort_order.type, Integer)
+    assert sort_order.nullable is False
+    assert sort_order.default is not None
+    assert sort_order.default.is_scalar is True
+    assert sort_order.default.arg == 0
+    assert sort_order.server_default is not None
+    assert str(sort_order.server_default.arg) == "0"
+
+
+def test_meal_item_sort_order_is_non_negative_without_unique_constraint() -> None:
+    from app.models.plan_structure import Meal, MealItem
+
+    table = MealItem.__table__
+    constraints = {constraint.name: constraint for constraint in table.constraints}
+
+    check = constraints["ck_meal_items_sort_order_non_negative"]
+    assert isinstance(check, CheckConstraint)
+    assert str(check.sqltext) == "sort_order >= 0"
+    assert not any(
+        isinstance(constraint, UniqueConstraint)
+        and "sort_order" in constraint.columns
+        for constraint in table.constraints
+    )
+    relationship = Meal.__mapper__.relationships["items"]
+    assert relationship.mapper.class_ is MealItem
+    assert relationship.back_populates == "meal"
+    assert relationship.order_by is False
 
 
 def test_metadata_contains_only_expected_plan_structure_tables() -> None:
@@ -206,6 +249,9 @@ psycopg.connect = fail_if_database_is_used
 from app.models.base import Base
 from app.models.plan_structure import Meal, MealItem, PlanDay
 
+assert isinstance(MealItem.__table__.c.sort_order.type, sqlalchemy.Integer)
+assert MealItem.__mapper__.relationships["meal"].back_populates == "items"
+assert Meal.__mapper__.relationships["items"].order_by is False
 assert set(Base.metadata.tables) == {
     "users",
     "dietitian_profiles",

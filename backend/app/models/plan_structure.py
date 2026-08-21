@@ -10,6 +10,7 @@ from sqlalchemy import (
     Numeric,
     String,
     UniqueConstraint,
+    text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -114,6 +115,10 @@ class MealItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):
             "quantity > 0",
             name="ck_meal_items_quantity_positive",
         ),
+        CheckConstraint(
+            "sort_order >= 0",
+            name="ck_meal_items_sort_order_non_negative",
+        ),
     )
 
     meal_id: Mapped[uuid.UUID] = mapped_column(
@@ -136,6 +141,12 @@ class MealItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     )
     # Yemek kataloğu eklenene kadar isim, plan içeriğinin gösterim anlık görüntüsüdür.
     item_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    sort_order: Mapped[int] = mapped_column(
+        Integer,
+        default=0,
+        server_default=text("0"),
+        nullable=False,
+    )
     quantity: Mapped[Decimal] = mapped_column(
         Numeric(10, 3),
         nullable=False,

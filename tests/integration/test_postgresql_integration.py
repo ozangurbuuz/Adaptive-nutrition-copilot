@@ -113,7 +113,7 @@ def test_migrations_upgrade_empty_database_to_expected_head(
     with postgres_engine.connect() as connection:
         head = connection.scalar(sa.text("SELECT version_num FROM alembic_version"))
 
-    assert head == "0009_link_meal_items_to_foods"
+    assert head == "0010_add_meal_item_sort_order"
 
 
 def test_duplicate_user_email_is_rejected(db_session: Session) -> None:
@@ -164,6 +164,71 @@ def test_non_positive_meal_item_quantity_is_rejected(db_session: Session) -> Non
             item_name="Invalid Quantity",
             quantity=Decimal("0"),
             unit=MealItemUnit.GRAM,
+        )
+    )
+
+    with pytest.raises(IntegrityError):
+        db_session.flush()
+
+
+def test_meal_item_sort_order_orm_default_preserves_nullable_food_and_snapshot(
+    db_session: Session,
+) -> None:
+    _, _, meal = _create_meal(db_session)
+    item = MealItem(
+        meal_id=meal.id,
+        item_name="Default Order Snapshot",
+        quantity=Decimal("1"),
+        unit=MealItemUnit.PORTION,
+    )
+    db_session.add(item)
+    db_session.flush()
+
+    assert item.sort_order == 0
+    assert item.food_id is None
+    assert item.item_name == "Default Order Snapshot"
+
+
+def test_meal_item_sort_order_server_default_is_zero(db_session: Session) -> None:
+    _, _, meal = _create_meal(db_session)
+    item_id = uuid.uuid4()
+    db_session.execute(
+        sa.text(
+            "INSERT INTO meal_items "
+            "(id, meal_id, item_name, quantity, unit, created_at, updated_at) "
+            "VALUES (:id, :meal_id, :item_name, :quantity, :unit, now(), now())"
+        ),
+        {
+            "id": item_id,
+            "meal_id": meal.id,
+            "item_name": "Server Default Snapshot",
+            "quantity": Decimal("1"),
+            "unit": MealItemUnit.PORTION.value,
+        },
+    )
+
+    row = db_session.execute(
+        sa.text(
+            "SELECT sort_order, food_id, item_name "
+            "FROM meal_items WHERE id = :id"
+        ),
+        {"id": item_id},
+    ).one()
+
+    assert row.sort_order == 0
+    assert row.food_id is None
+    assert row.item_name == "Server Default Snapshot"
+
+
+def test_negative_meal_item_sort_order_is_rejected(db_session: Session) -> None:
+    _, _, meal = _create_meal(db_session)
+    db_session.add(
+        MealItem(
+            meal_id=meal.id,
+            item_name="Invalid Order",
+            quantity=Decimal("1"),
+            unit=MealItemUnit.PORTION,
+            sort_order=-1,
         )
     )
 

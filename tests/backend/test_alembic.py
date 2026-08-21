@@ -63,26 +63,28 @@ def test_alembic_revision_graph_loads_without_database_connection() -> None:
     script = ScriptDirectory.from_config(config)
     revisions = list(script.walk_revisions())
 
-    assert script.get_heads() == ["0009_link_meal_items_to_foods"]
-    assert len(revisions) == 9
-    assert revisions[0].revision == "0009_link_meal_items_to_foods"
-    assert revisions[0].down_revision == "0008_create_food_catalog"
-    assert revisions[1].revision == "0008_create_food_catalog"
-    assert revisions[1].down_revision == "0007_create_plan_structure"
-    assert revisions[2].revision == "0007_create_plan_structure"
-    assert revisions[2].down_revision == "0006_create_nutrition_plans"
-    assert revisions[3].revision == "0006_create_nutrition_plans"
-    assert revisions[3].down_revision == "0005_create_clinical_records"
-    assert revisions[4].revision == "0005_create_clinical_records"
-    assert revisions[4].down_revision == "0004_create_client_details"
-    assert revisions[5].revision == "0004_create_client_details"
-    assert revisions[5].down_revision == "0003_create_profiles"
-    assert revisions[6].revision == "0003_create_profiles"
-    assert revisions[6].down_revision == "0002_create_users"
-    assert revisions[7].revision == "0002_create_users"
-    assert revisions[7].down_revision == "0001_orm_baseline"
-    assert revisions[8].revision == "0001_orm_baseline"
-    assert revisions[8].down_revision is None
+    assert script.get_heads() == ["0010_add_meal_item_sort_order"]
+    assert len(revisions) == 10
+    assert revisions[0].revision == "0010_add_meal_item_sort_order"
+    assert revisions[0].down_revision == "0009_link_meal_items_to_foods"
+    assert revisions[1].revision == "0009_link_meal_items_to_foods"
+    assert revisions[1].down_revision == "0008_create_food_catalog"
+    assert revisions[2].revision == "0008_create_food_catalog"
+    assert revisions[2].down_revision == "0007_create_plan_structure"
+    assert revisions[3].revision == "0007_create_plan_structure"
+    assert revisions[3].down_revision == "0006_create_nutrition_plans"
+    assert revisions[4].revision == "0006_create_nutrition_plans"
+    assert revisions[4].down_revision == "0005_create_clinical_records"
+    assert revisions[5].revision == "0005_create_clinical_records"
+    assert revisions[5].down_revision == "0004_create_client_details"
+    assert revisions[6].revision == "0004_create_client_details"
+    assert revisions[6].down_revision == "0003_create_profiles"
+    assert revisions[7].revision == "0003_create_profiles"
+    assert revisions[7].down_revision == "0002_create_users"
+    assert revisions[8].revision == "0002_create_users"
+    assert revisions[8].down_revision == "0001_orm_baseline"
+    assert revisions[9].revision == "0001_orm_baseline"
+    assert revisions[9].down_revision is None
 
 
 def test_alembic_database_url_is_resolved_from_settings(monkeypatch) -> None:
@@ -1066,4 +1068,130 @@ def test_meal_item_food_migration_downgrade_removes_fk_then_column(
             {"type_": "foreignkey"},
         ),
         ("drop_column", ("meal_items", "food_id"), {}),
+    ]
+
+
+def test_meal_item_sort_order_migration_is_next_0010_revision() -> None:
+    migration_path = (
+        ALEMBIC_ROOT / "versions" / "0010_add_meal_item_sort_order.py"
+    )
+    assert migration_path.is_file()
+
+    spec = importlib.util.spec_from_file_location(
+        "stage4_meal_item_sort_order_migration",
+        migration_path,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    assert module.revision == "0010_add_meal_item_sort_order"
+    assert module.down_revision == "0009_link_meal_items_to_foods"
+    assert module.branch_labels is None
+    assert module.depends_on is None
+
+
+def test_meal_item_sort_order_migration_adds_only_column_and_check(
+    monkeypatch,
+) -> None:
+    migration_path = (
+        ALEMBIC_ROOT / "versions" / "0010_add_meal_item_sort_order.py"
+    )
+    assert migration_path.is_file()
+
+    spec = importlib.util.spec_from_file_location(
+        "stage4_meal_item_sort_order_migration_upgrade",
+        migration_path,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    operations = []
+    monkeypatch.setattr(
+        module.op,
+        "add_column",
+        lambda *args, **kwargs: operations.append(("add_column", args, kwargs)),
+    )
+    monkeypatch.setattr(
+        module.op,
+        "create_check_constraint",
+        lambda *args, **kwargs: operations.append(
+            ("create_check_constraint", args, kwargs)
+        ),
+    )
+    monkeypatch.setattr(
+        module.op,
+        "create_unique_constraint",
+        lambda *args, **kwargs: operations.append(
+            ("create_unique_constraint", args, kwargs)
+        ),
+    )
+
+    module.upgrade()
+
+    assert len(operations) == 2
+    operation, args, kwargs = operations[0]
+    assert operation == "add_column"
+    assert args[0] == "meal_items"
+    column = args[1]
+    assert column.name == "sort_order"
+    assert isinstance(column.type, sa.Integer)
+    assert column.nullable is False
+    assert column.server_default is not None
+    assert str(column.server_default.arg) == "0"
+    assert kwargs == {}
+    assert operations[1] == (
+        "create_check_constraint",
+        (
+            "ck_meal_items_sort_order_non_negative",
+            "meal_items",
+            "sort_order >= 0",
+        ),
+        {},
+    )
+
+
+def test_meal_item_sort_order_migration_downgrade_removes_check_then_column(
+    monkeypatch,
+) -> None:
+    migration_path = (
+        ALEMBIC_ROOT / "versions" / "0010_add_meal_item_sort_order.py"
+    )
+    assert migration_path.is_file()
+
+    spec = importlib.util.spec_from_file_location(
+        "stage4_meal_item_sort_order_migration_downgrade",
+        migration_path,
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    operations = []
+    monkeypatch.setattr(
+        module.op,
+        "drop_constraint",
+        lambda *args, **kwargs: operations.append(
+            ("drop_constraint", args, kwargs)
+        ),
+    )
+    monkeypatch.setattr(
+        module.op,
+        "drop_column",
+        lambda *args, **kwargs: operations.append(("drop_column", args, kwargs)),
+    )
+
+    module.downgrade()
+
+    assert operations == [
+        (
+            "drop_constraint",
+            ("ck_meal_items_sort_order_non_negative", "meal_items"),
+            {"type_": "check"},
+        ),
+        ("drop_column", ("meal_items", "sort_order"), {}),
     ]
