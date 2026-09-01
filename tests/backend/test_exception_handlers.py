@@ -163,11 +163,15 @@ def test_main_registers_central_exception_handlers(monkeypatch) -> None:
     def record_registration(app: FastAPI) -> None:
         registered_apps.append(app)
 
-    monkeypatch.setattr(
-        handlers_module,
-        "register_exception_handlers",
-        record_registration,
-    )
-    main_module = importlib.reload(main_module)
+    try:
+        with monkeypatch.context() as patch:
+            patch.setattr(
+                handlers_module,
+                "register_exception_handlers",
+                record_registration,
+            )
+            main_module = importlib.reload(main_module)
 
-    assert registered_apps == [main_module.app]
+            assert registered_apps == [main_module.app]
+    finally:
+        importlib.reload(main_module)
