@@ -66,10 +66,12 @@ def test_provenance_migration_is_revision_0011() -> None:
 
 
 # Alembic graph head'inin yeni revision'a taşındığını doğrular.
-def test_alembic_head_is_provenance_revision() -> None:
+def test_alembic_graph_keeps_provenance_revision() -> None:
     config = Config(str(ALEMBIC_INI))
     script = ScriptDirectory.from_config(config)
-    assert script.get_heads() == ["0011_food_dataset_provenance"]
+    revision = script.get_revision("0011_food_dataset_provenance")
+    assert revision is not None
+    assert revision.down_revision == "0010_add_meal_item_sort_order"
 
 
 # Upgrade'ın yalnız iki yeni tabloyu doğru bağımlılık sırasıyla oluşturmasını sınar.

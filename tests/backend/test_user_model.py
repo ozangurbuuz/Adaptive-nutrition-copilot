@@ -101,7 +101,14 @@ def test_base_metadata_contains_only_expected_domain_tables() -> None:
     from app.models.profiles import ClientProfile, DietitianProfile
     from app.models.nutrition_plan import NutritionPlan
     from app.models.plan_structure import Meal, MealItem, PlanDay
-    from app.models.food import DatasetRelease, Food, FoodNutrient, FoodSourceRecord
+    from app.models.food import (
+        DatasetRelease,
+        Food,
+        FoodNutrient,
+        FoodNutrientValue,
+        FoodSourceRecord,
+        NutrientDefinition,
+    )
     from app.models.user import User
 
     assert dict(Base.metadata.tables) == {
@@ -121,6 +128,8 @@ def test_base_metadata_contains_only_expected_domain_tables() -> None:
         "food_nutrients": FoodNutrient.__table__,
         "dataset_releases": DatasetRelease.__table__,
         "food_source_records": FoodSourceRecord.__table__,
+        "nutrient_definitions": NutrientDefinition.__table__,
+        "food_nutrient_values": FoodNutrientValue.__table__,
     }
 
 
@@ -145,7 +154,14 @@ from app.models.clinical_records import (
 from app.models.profiles import ClientProfile, DietitianProfile
 from app.models.nutrition_plan import NutritionPlan
 from app.models.plan_structure import Meal, MealItem, PlanDay
-from app.models.food import DatasetRelease, Food, FoodNutrient, FoodSourceRecord
+from app.models.food import (
+    DatasetRelease,
+    Food,
+    FoodNutrient,
+    FoodNutrientValue,
+    FoodSourceRecord,
+    NutrientDefinition,
+)
 from app.models.user import User
 
 assert set(Base.metadata.tables) == {
@@ -165,6 +181,8 @@ assert set(Base.metadata.tables) == {
     "food_nutrients",
     "dataset_releases",
     "food_source_records",
+    "nutrient_definitions",
+    "food_nutrient_values",
 }
 assert User.__table__ is Base.metadata.tables["users"]
 assert DietitianProfile.__table__ is Base.metadata.tables["dietitian_profiles"]
@@ -182,6 +200,8 @@ assert Food.__table__ is Base.metadata.tables["foods"]
 assert FoodNutrient.__table__ is Base.metadata.tables["food_nutrients"]
 assert DatasetRelease.__table__ is Base.metadata.tables["dataset_releases"]
 assert FoodSourceRecord.__table__ is Base.metadata.tables["food_source_records"]
+assert NutrientDefinition.__table__ is Base.metadata.tables["nutrient_definitions"]
+assert FoodNutrientValue.__table__ is Base.metadata.tables["food_nutrient_values"]
 """
 
     result = subprocess.run(

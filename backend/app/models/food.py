@@ -20,7 +20,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.models import plan_structure as _plan_structure  # noqa: F401
 from app.models.base import Base
-from app.models.enums import FoodCategory, MealItemUnit, NutrientReferenceUnit
+from app.models.enums import (
+    FoodCategory,
+    MealItemUnit,
+    NutrientReferenceUnit,
+    NutrientUnit,
+)
 from app.models.mixins import TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
@@ -261,4 +266,94 @@ class FoodSourceRecord(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     food: Mapped[Food] = relationship(back_populates="source_records")
     dataset_release: Mapped[DatasetRelease] = relationship(
         back_populates="food_source_records"
+    )
+    nutrient_values: Mapped[list["FoodNutrientValue"]] = relationship(
+        back_populates="food_source_record",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        single_parent=True,
+    )
+
+
+class NutrientDefinition(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "nutrient_definitions"
+    __table_args__ = (
+        UniqueConstraint("code", name="uq_nutrient_definitions_code"),
+        CheckConstraint(
+            "length(btrim(code)) > 0",
+            name="ck_nutrient_definitions_code_nonblank",
+        ),
+        CheckConstraint(
+            "code = upper(btrim(code))",
+            name="ck_nutrient_definitions_code_canonical",
+        ),
+        CheckConstraint(
+            "length(btrim(name_en)) > 0",
+            name="ck_nutrient_definitions_name_en_nonblank",
+        ),
+    )
+
+    code: Mapped[str] = mapped_column(String(50), nullable=False)
+    name_en: Mapped[str] = mapped_column(String(100), nullable=False)
+    unit: Mapped[NutrientUnit] = mapped_column(
+        Enum(
+            NutrientUnit,
+            name="nutrient_unit",
+            native_enum=False,
+            create_constraint=True,
+            validate_strings=True,
+        ),
+        nullable=False,
+    )
+
+    values: Mapped[list["FoodNutrientValue"]] = relationship(
+        back_populates="nutrient_definition",
+        passive_deletes="all",
+    )
+
+
+class FoodNutrientValue(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "food_nutrient_values"
+    __table_args__ = (
+        UniqueConstraint(
+            "food_source_record_id",
+            "nutrient_definition_id",
+            name="uq_food_nutrient_values_source_record_nutrient",
+        ),
+        CheckConstraint(
+            "amount_per_100g IS NULL OR amount_per_100g >= 0",
+            name="ck_food_nutrient_values_amount_non_negative",
+        ),
+    )
+
+    food_source_record_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "food_source_records.id",
+            name="fk_food_nutrient_values_source_record",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+    nutrient_definition_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "nutrient_definitions.id",
+            name="fk_food_nutrient_values_nutrient_definition",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
+        index=True,
+    )
+    amount_per_100g: Mapped[Decimal | None] = mapped_column(
+        Numeric(14, 6),
+        nullable=True,
+    )
+
+    food_source_record: Mapped[FoodSourceRecord] = relationship(
+        back_populates="nutrient_values"
+    )
+    nutrient_definition: Mapped[NutrientDefinition] = relationship(
+        back_populates="values"
     )

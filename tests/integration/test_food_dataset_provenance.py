@@ -20,7 +20,7 @@ pytestmark = pytest.mark.integration
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ALEMBIC_INI = PROJECT_ROOT / "backend" / "alembic.ini"
-PROVENANCE_REVISION = "0011_food_dataset_provenance"
+CURRENT_HEAD = "0012_food_nutrient_values"
 
 
 # Eksik production siniflarini collection error yerine okunabilir RED failure'a cevirir.
@@ -328,8 +328,8 @@ def test_provenance_migration_downgrade_and_reupgrade(
     finally:
         with postgres_engine.begin() as connection:
             config.attributes["connection"] = connection
-            command.upgrade(config, PROVENANCE_REVISION)
+            command.upgrade(config, "head")
 
     with postgres_engine.connect() as connection:
         head = connection.scalar(sa.text("SELECT version_num FROM alembic_version"))
-    assert head == PROVENANCE_REVISION
+    assert head == CURRENT_HEAD

@@ -70,3 +70,10 @@ class FoodCategory(str, Enum):
 class NutrientReferenceUnit(str, Enum):
     GRAM = "GRAM"
     MILLILITER = "MILLILITER"
+
+
+class NutrientUnit(str, Enum):
+    KCAL = "KCAL"
+    GRAM = "GRAM"
+    MILLIGRAM = "MILLIGRAM"
+    MICROGRAM = "MICROGRAM"

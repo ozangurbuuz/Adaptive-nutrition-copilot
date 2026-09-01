@@ -34,6 +34,8 @@ DOMAIN_TABLES = {
     "food_nutrients",
     "dataset_releases",
     "food_source_records",
+    "nutrient_definitions",
+    "food_nutrient_values",
 }
 MANAGED_TABLES = DOMAIN_TABLES | {"alembic_version"}
 
