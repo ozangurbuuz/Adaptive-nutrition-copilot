@@ -101,7 +101,7 @@ def test_base_metadata_contains_only_expected_domain_tables() -> None:
     from app.models.profiles import ClientProfile, DietitianProfile
     from app.models.nutrition_plan import NutritionPlan
     from app.models.plan_structure import Meal, MealItem, PlanDay
-    from app.models.food import Food, FoodNutrient
+    from app.models.food import DatasetRelease, Food, FoodNutrient, FoodSourceRecord
     from app.models.user import User
 
     assert dict(Base.metadata.tables) == {
@@ -119,6 +119,8 @@ def test_base_metadata_contains_only_expected_domain_tables() -> None:
         "meal_items": MealItem.__table__,
         "foods": Food.__table__,
         "food_nutrients": FoodNutrient.__table__,
+        "dataset_releases": DatasetRelease.__table__,
+        "food_source_records": FoodSourceRecord.__table__,
     }
 
 
@@ -143,7 +145,7 @@ from app.models.clinical_records import (
 from app.models.profiles import ClientProfile, DietitianProfile
 from app.models.nutrition_plan import NutritionPlan
 from app.models.plan_structure import Meal, MealItem, PlanDay
-from app.models.food import Food, FoodNutrient
+from app.models.food import DatasetRelease, Food, FoodNutrient, FoodSourceRecord
 from app.models.user import User
 
 assert set(Base.metadata.tables) == {
@@ -161,6 +163,8 @@ assert set(Base.metadata.tables) == {
     "meal_items",
     "foods",
     "food_nutrients",
+    "dataset_releases",
+    "food_source_records",
 }
 assert User.__table__ is Base.metadata.tables["users"]
 assert DietitianProfile.__table__ is Base.metadata.tables["dietitian_profiles"]
@@ -176,6 +180,8 @@ assert Meal.__table__ is Base.metadata.tables["meals"]
 assert MealItem.__table__ is Base.metadata.tables["meal_items"]
 assert Food.__table__ is Base.metadata.tables["foods"]
 assert FoodNutrient.__table__ is Base.metadata.tables["food_nutrients"]
+assert DatasetRelease.__table__ is Base.metadata.tables["dataset_releases"]
+assert FoodSourceRecord.__table__ is Base.metadata.tables["food_source_records"]
 """
 
     result = subprocess.run(

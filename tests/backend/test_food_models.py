@@ -237,6 +237,8 @@ def test_food_models_keep_catalog_scope_without_meal_item_nutrients() -> None:
         "meal_items",
         "foods",
         "food_nutrients",
+        "dataset_releases",
+        "food_source_records",
     }
 
 
@@ -269,6 +271,8 @@ assert set(Base.metadata.tables) == {
     "meal_items",
     "foods",
     "food_nutrients",
+    "dataset_releases",
+    "food_source_records",
 }
 """
 

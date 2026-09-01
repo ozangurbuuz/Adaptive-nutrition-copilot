@@ -48,6 +48,8 @@ EXPECTED_TABLES = {
     "meal_items",
     "foods",
     "food_nutrients",
+    "dataset_releases",
+    "food_source_records",
     "alembic_version",
 }
 
@@ -113,7 +115,7 @@ def test_migrations_upgrade_empty_database_to_expected_head(
     with postgres_engine.connect() as connection:
         head = connection.scalar(sa.text("SELECT version_num FROM alembic_version"))
 
-    assert head == "0010_add_meal_item_sort_order"
+    assert head == "0011_food_dataset_provenance"
 
 
 def test_duplicate_user_email_is_rejected(db_session: Session) -> None:

@@ -1,10 +1,12 @@
 import uuid
+from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
+    DateTime,
     Enum,
     ForeignKey,
     Numeric,
@@ -80,6 +82,12 @@ class Food(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         back_populates="food",
         passive_deletes="all",
     )
+    source_records: Mapped[list["FoodSourceRecord"]] = relationship(
+        back_populates="food",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        single_parent=True,
+    )
 
     @validates("name")
     def normalize_name(self, key: str, value: str) -> str:
@@ -149,3 +157,108 @@ class FoodNutrient(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     fiber_g: Mapped[Decimal | None] = mapped_column(Numeric(10, 3), nullable=True)
 
     food: Mapped[Food] = relationship(back_populates="nutrient_profile")
+
+
+class DatasetRelease(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "dataset_releases"
+    __table_args__ = (
+        UniqueConstraint(
+            "source",
+            "release_version",
+            name="uq_dataset_releases_source_release_version",
+        ),
+        UniqueConstraint(
+            "source",
+            "checksum_sha256",
+            name="uq_dataset_releases_source_checksum_sha256",
+        ),
+        CheckConstraint(
+            "length(btrim(source)) > 0",
+            name="ck_dataset_releases_source_nonblank",
+        ),
+        CheckConstraint(
+            "length(btrim(release_version)) > 0",
+            name="ck_dataset_releases_release_version_nonblank",
+        ),
+        CheckConstraint(
+            "length(checksum_sha256) = 64",
+            name="ck_dataset_releases_checksum_sha256_length",
+        ),
+        CheckConstraint(
+            "length(btrim(license_reference)) > 0",
+            name="ck_dataset_releases_license_reference_nonblank",
+        ),
+    )
+
+    source: Mapped[str] = mapped_column(String(50), nullable=False)
+    release_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    downloaded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+    )
+    imported_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    checksum_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    license_reference: Mapped[str] = mapped_column(String(500), nullable=False)
+
+    food_source_records: Mapped[list["FoodSourceRecord"]] = relationship(
+        back_populates="dataset_release",
+        passive_deletes="all",
+    )
+
+
+class FoodSourceRecord(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "food_source_records"
+    __table_args__ = (
+        UniqueConstraint(
+            "dataset_release_id",
+            "source_food_id",
+            name="uq_food_source_records_dataset_release_id_source_food_id",
+        ),
+        CheckConstraint(
+            "length(btrim(source_food_id)) > 0",
+            name="ck_food_source_records_source_food_id_nonblank",
+        ),
+        CheckConstraint(
+            "length(btrim(canonical_name)) > 0",
+            name="ck_food_source_records_canonical_name_nonblank",
+        ),
+        CheckConstraint(
+            "preparation_state IS NULL OR length(btrim(preparation_state)) > 0",
+            name="ck_food_source_records_preparation_state_nonblank",
+        ),
+    )
+
+    food_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "foods.id",
+            name="fk_food_source_records_food_id_foods",
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+    dataset_release_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "dataset_releases.id",
+            name="fk_food_source_records_dataset_release_id_dataset_releases",
+            ondelete="RESTRICT",
+        ),
+        nullable=False,
+    )
+    source_food_id: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+        index=True,
+    )
+    canonical_name: Mapped[str] = mapped_column(String(255), nullable=False)
+    preparation_state: Mapped[str | None] = mapped_column(String(100), nullable=True)
+
+    food: Mapped[Food] = relationship(back_populates="source_records")
+    dataset_release: Mapped[DatasetRelease] = relationship(
+        back_populates="food_source_records"
+    )

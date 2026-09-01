@@ -32,6 +32,8 @@ DOMAIN_TABLES = {
     "meal_items",
     "foods",
     "food_nutrients",
+    "dataset_releases",
+    "food_source_records",
 }
 MANAGED_TABLES = DOMAIN_TABLES | {"alembic_version"}
 
