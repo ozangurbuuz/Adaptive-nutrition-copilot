@@ -56,10 +56,13 @@ def test_nutrient_value_migration_revision_and_length() -> None:
     assert module.depends_on is None
 
 
-def test_alembic_head_is_nutrient_value_revision() -> None:
+def test_nutrient_value_revision_remains_below_food_portion_head() -> None:
     config = Config(str(ALEMBIC_INI))
     script = ScriptDirectory.from_config(config)
-    assert script.get_heads() == ["0012_food_nutrient_values"]
+    assert script.get_heads() == ["0013_food_portions"]
+    revision = script.get_revision("0012_food_nutrient_values")
+    assert revision is not None
+    assert revision.down_revision == "0011_food_dataset_provenance"
 
 
 def test_migration_creates_only_two_tables_in_dependency_order(monkeypatch) -> None:

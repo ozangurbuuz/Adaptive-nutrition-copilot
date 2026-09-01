@@ -9,6 +9,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Integer,
     Numeric,
     String,
     UniqueConstraint,
@@ -272,6 +273,93 @@ class FoodSourceRecord(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
         single_parent=True,
+    )
+    portions: Mapped[list["FoodPortion"]] = relationship(
+        back_populates="food_source_record",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        single_parent=True,
+    )
+
+
+class FoodPortion(UUIDPrimaryKeyMixin, TimestampMixin, Base):
+    __tablename__ = "food_portions"
+    __table_args__ = (
+        UniqueConstraint(
+            "food_source_record_id",
+            "source_portion_id",
+            name="uq_food_portions_source_record_source_portion_id",
+        ),
+        UniqueConstraint(
+            "food_source_record_id",
+            "sequence_number",
+            name="uq_food_portions_source_record_sequence_number",
+        ),
+        CheckConstraint(
+            "source_portion_id IS NULL OR btrim(source_portion_id) <> ''",
+            name="ck_food_portions_source_portion_id_nonblank",
+        ),
+        CheckConstraint(
+            "amount > 0",
+            name="ck_food_portions_amount_positive",
+        ),
+        CheckConstraint(
+            "measure_code IS NULL OR "
+            "(btrim(measure_code) <> '' "
+            "AND measure_code = upper(btrim(measure_code)))",
+            name="ck_food_portions_measure_code_canonical",
+        ),
+        CheckConstraint(
+            "measure_name IS NULL OR btrim(measure_name) <> ''",
+            name="ck_food_portions_measure_name_nonblank",
+        ),
+        CheckConstraint(
+            "modifier IS NULL OR btrim(modifier) <> ''",
+            name="ck_food_portions_modifier_nonblank",
+        ),
+        CheckConstraint(
+            "btrim(portion_description) <> ''",
+            name="ck_food_portions_description_nonblank",
+        ),
+        CheckConstraint(
+            "gram_weight IS NULL OR gram_weight > 0",
+            name="ck_food_portions_gram_weight_positive",
+        ),
+        CheckConstraint(
+            "sequence_number IS NULL OR sequence_number > 0",
+            name="ck_food_portions_sequence_number_positive",
+        ),
+    )
+
+    food_source_record_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey(
+            "food_source_records.id",
+            name=(
+                "fk_food_portions_food_source_record_id_food_source_records"
+            ),
+            ondelete="CASCADE",
+        ),
+        nullable=False,
+        index=True,
+    )
+    source_portion_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+    amount: Mapped[Decimal] = mapped_column(Numeric(14, 6), nullable=False)
+    measure_code: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    measure_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    modifier: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    portion_description: Mapped[str] = mapped_column(String(255), nullable=False)
+    gram_weight: Mapped[Decimal | None] = mapped_column(
+        Numeric(14, 6),
+        nullable=True,
+    )
+    sequence_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+
+    food_source_record: Mapped[FoodSourceRecord] = relationship(
+        back_populates="portions"
     )
 
 

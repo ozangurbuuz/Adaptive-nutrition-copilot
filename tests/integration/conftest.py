@@ -36,6 +36,7 @@ DOMAIN_TABLES = {
     "food_source_records",
     "nutrient_definitions",
     "food_nutrient_values",
+    "food_portions",
 }
 MANAGED_TABLES = DOMAIN_TABLES | {"alembic_version"}
 

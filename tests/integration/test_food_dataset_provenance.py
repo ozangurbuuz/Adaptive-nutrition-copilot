@@ -20,7 +20,7 @@ pytestmark = pytest.mark.integration
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ALEMBIC_INI = PROJECT_ROOT / "backend" / "alembic.ini"
-CURRENT_HEAD = "0012_food_nutrient_values"
+CURRENT_HEAD = "0013_food_portions"
 
 
 # Eksik production siniflarini collection error yerine okunabilir RED failure'a cevirir.

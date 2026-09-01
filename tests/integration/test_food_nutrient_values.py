@@ -28,6 +28,7 @@ MIGRATION_PATH = (
     / "0012_create_food_nutrient_values.py"
 )
 NUTRIENT_REVISION = "0012_food_nutrient_values"
+CURRENT_HEAD = "0013_food_portions"
 
 
 def _contract():
@@ -355,8 +356,8 @@ def test_nutrient_value_migration_downgrade_and_reupgrade(
     finally:
         with postgres_engine.begin() as connection:
             config.attributes["connection"] = connection
-            command.upgrade(config, NUTRIENT_REVISION)
+            command.upgrade(config, "head")
 
     with postgres_engine.connect() as connection:
         head = connection.scalar(sa.text("SELECT version_num FROM alembic_version"))
-    assert head == NUTRIENT_REVISION
+    assert head == CURRENT_HEAD

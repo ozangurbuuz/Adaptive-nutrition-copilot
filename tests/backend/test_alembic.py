@@ -57,6 +57,7 @@ def test_alembic_target_metadata_uses_central_base_without_database_connection(
         "food_source_records",
         "nutrient_definitions",
         "food_nutrient_values",
+        "food_portions",
     }
 
 
@@ -67,32 +68,34 @@ def test_alembic_revision_graph_loads_without_database_connection() -> None:
     script = ScriptDirectory.from_config(config)
     revisions = list(script.walk_revisions())
 
-    assert script.get_heads() == ["0012_food_nutrient_values"]
-    assert len(revisions) == 12
-    assert revisions[0].revision == "0012_food_nutrient_values"
-    assert revisions[0].down_revision == "0011_food_dataset_provenance"
-    assert revisions[1].revision == "0011_food_dataset_provenance"
-    assert revisions[1].down_revision == "0010_add_meal_item_sort_order"
-    assert revisions[2].revision == "0010_add_meal_item_sort_order"
-    assert revisions[2].down_revision == "0009_link_meal_items_to_foods"
-    assert revisions[3].revision == "0009_link_meal_items_to_foods"
-    assert revisions[3].down_revision == "0008_create_food_catalog"
-    assert revisions[4].revision == "0008_create_food_catalog"
-    assert revisions[4].down_revision == "0007_create_plan_structure"
-    assert revisions[5].revision == "0007_create_plan_structure"
-    assert revisions[5].down_revision == "0006_create_nutrition_plans"
-    assert revisions[6].revision == "0006_create_nutrition_plans"
-    assert revisions[6].down_revision == "0005_create_clinical_records"
-    assert revisions[7].revision == "0005_create_clinical_records"
-    assert revisions[7].down_revision == "0004_create_client_details"
-    assert revisions[8].revision == "0004_create_client_details"
-    assert revisions[8].down_revision == "0003_create_profiles"
-    assert revisions[9].revision == "0003_create_profiles"
-    assert revisions[9].down_revision == "0002_create_users"
-    assert revisions[10].revision == "0002_create_users"
-    assert revisions[10].down_revision == "0001_orm_baseline"
-    assert revisions[11].revision == "0001_orm_baseline"
-    assert revisions[11].down_revision is None
+    assert script.get_heads() == ["0013_food_portions"]
+    assert len(revisions) == 13
+    assert revisions[0].revision == "0013_food_portions"
+    assert revisions[0].down_revision == "0012_food_nutrient_values"
+    assert revisions[1].revision == "0012_food_nutrient_values"
+    assert revisions[1].down_revision == "0011_food_dataset_provenance"
+    assert revisions[2].revision == "0011_food_dataset_provenance"
+    assert revisions[2].down_revision == "0010_add_meal_item_sort_order"
+    assert revisions[3].revision == "0010_add_meal_item_sort_order"
+    assert revisions[3].down_revision == "0009_link_meal_items_to_foods"
+    assert revisions[4].revision == "0009_link_meal_items_to_foods"
+    assert revisions[4].down_revision == "0008_create_food_catalog"
+    assert revisions[5].revision == "0008_create_food_catalog"
+    assert revisions[5].down_revision == "0007_create_plan_structure"
+    assert revisions[6].revision == "0007_create_plan_structure"
+    assert revisions[6].down_revision == "0006_create_nutrition_plans"
+    assert revisions[7].revision == "0006_create_nutrition_plans"
+    assert revisions[7].down_revision == "0005_create_clinical_records"
+    assert revisions[8].revision == "0005_create_clinical_records"
+    assert revisions[8].down_revision == "0004_create_client_details"
+    assert revisions[9].revision == "0004_create_client_details"
+    assert revisions[9].down_revision == "0003_create_profiles"
+    assert revisions[10].revision == "0003_create_profiles"
+    assert revisions[10].down_revision == "0002_create_users"
+    assert revisions[11].revision == "0002_create_users"
+    assert revisions[11].down_revision == "0001_orm_baseline"
+    assert revisions[12].revision == "0001_orm_baseline"
+    assert revisions[12].down_revision is None
 
 
 def test_alembic_database_url_is_resolved_from_settings(monkeypatch) -> None:
@@ -188,6 +191,7 @@ def test_alembic_files_contain_no_hardcoded_credentials() -> None:
         ALEMBIC_ROOT / "versions" / "0010_add_meal_item_sort_order.py",
         ALEMBIC_ROOT / "versions" / "0011_create_food_dataset_provenance.py",
         ALEMBIC_ROOT / "versions" / "0012_create_food_nutrient_values.py",
+        ALEMBIC_ROOT / "versions" / "0013_create_food_portions.py",
     ]
 
     for path in migration_files:

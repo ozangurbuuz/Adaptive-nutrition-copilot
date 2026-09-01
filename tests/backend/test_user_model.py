@@ -106,6 +106,7 @@ def test_base_metadata_contains_only_expected_domain_tables() -> None:
         Food,
         FoodNutrient,
         FoodNutrientValue,
+        FoodPortion,
         FoodSourceRecord,
         NutrientDefinition,
     )
@@ -130,6 +131,7 @@ def test_base_metadata_contains_only_expected_domain_tables() -> None:
         "food_source_records": FoodSourceRecord.__table__,
         "nutrient_definitions": NutrientDefinition.__table__,
         "food_nutrient_values": FoodNutrientValue.__table__,
+        "food_portions": FoodPortion.__table__,
     }
 
 
@@ -159,6 +161,7 @@ from app.models.food import (
     Food,
     FoodNutrient,
     FoodNutrientValue,
+    FoodPortion,
     FoodSourceRecord,
     NutrientDefinition,
 )
@@ -183,6 +186,7 @@ assert set(Base.metadata.tables) == {
     "food_source_records",
     "nutrient_definitions",
     "food_nutrient_values",
+    "food_portions",
 }
 assert User.__table__ is Base.metadata.tables["users"]
 assert DietitianProfile.__table__ is Base.metadata.tables["dietitian_profiles"]
@@ -202,6 +206,7 @@ assert DatasetRelease.__table__ is Base.metadata.tables["dataset_releases"]
 assert FoodSourceRecord.__table__ is Base.metadata.tables["food_source_records"]
 assert NutrientDefinition.__table__ is Base.metadata.tables["nutrient_definitions"]
 assert FoodNutrientValue.__table__ is Base.metadata.tables["food_nutrient_values"]
+assert FoodPortion.__table__ is Base.metadata.tables["food_portions"]
 """
 
     result = subprocess.run(

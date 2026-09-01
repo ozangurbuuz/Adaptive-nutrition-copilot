@@ -231,6 +231,7 @@ def test_metadata_contains_only_expected_plan_structure_tables() -> None:
         "food_source_records",
         "nutrient_definitions",
         "food_nutrient_values",
+        "food_portions",
     }
     assert PlanDay.__table__ is Base.metadata.tables["plan_days"]
     assert Meal.__table__ is Base.metadata.tables["meals"]
@@ -275,6 +276,7 @@ assert set(Base.metadata.tables) == {
     "food_source_records",
     "nutrient_definitions",
     "food_nutrient_values",
+    "food_portions",
 }
 """
 
