@@ -1,0 +1,15 @@
+{
+  "source": "USDA_FDC_FOUNDATION_TEST_FIXTURE",
+  "release_version": "test-fixture-v1",
+  "downloaded_at": "2026-09-01T00:00:00Z",
+  "license_reference": "TEST_ONLY_SYNTHETIC_DATA",
+  "raw_filename": "synthetic_usda_foundation_source.json",
+  "canonical_filename": "canonical_3_foods.jsonl",
+  "raw_size_bytes": 1,
+  "raw_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "canonical_sha256": "d512f689e4c01c40fc125ab2e1148f69914ffb7ae59e9f25321cd4c6289d1ae7",
+  "record_count": 3,
+  "canonical_schema_version": "1",
+  "mapping_version": "canonical-nutrients-v1",
+  "generator_version": "test-fixture-v1"
+}

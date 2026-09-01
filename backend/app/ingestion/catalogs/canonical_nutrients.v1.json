@@ -1,0 +1,53 @@
+{
+  "catalog_version": 1,
+  "definitions": [
+    {
+      "code": "ENERGY_KCAL",
+      "name_en": "Energy",
+      "unit": "KCAL",
+      "usda_nutrient_ids": [2048, 2047, 1008]
+    },
+    {
+      "code": "PROTEIN",
+      "name_en": "Protein",
+      "unit": "GRAM",
+      "usda_nutrient_ids": [1003]
+    },
+    {
+      "code": "TOTAL_FAT",
+      "name_en": "Total fat",
+      "unit": "GRAM",
+      "usda_nutrient_ids": [1004]
+    },
+    {
+      "code": "CARBOHYDRATE",
+      "name_en": "Carbohydrate",
+      "unit": "GRAM",
+      "usda_nutrient_ids": [1005]
+    },
+    {
+      "code": "FIBER",
+      "name_en": "Dietary fiber",
+      "unit": "GRAM",
+      "usda_nutrient_ids": [1079]
+    },
+    {
+      "code": "TOTAL_SUGARS",
+      "name_en": "Total sugars",
+      "unit": "GRAM",
+      "usda_nutrient_ids": [2000]
+    },
+    {
+      "code": "SATURATED_FAT",
+      "name_en": "Saturated fat",
+      "unit": "GRAM",
+      "usda_nutrient_ids": [1258]
+    },
+    {
+      "code": "SODIUM",
+      "name_en": "Sodium",
+      "unit": "MILLIGRAM",
+      "usda_nutrient_ids": [1093]
+    }
+  ]
+}
